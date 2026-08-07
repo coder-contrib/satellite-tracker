@@ -2,7 +2,7 @@
 
 A real-time 3D satellite tracking web application built with Three.js and TypeScript. Track thousands of satellites orbiting Earth with live position updates using official TLE data from CelesTrak.
 
-![Satellite Tracker](https://img.shields.io/badge/status-active-brightgreen)
+![Satellite Tracker](./public/images/image.png)
 
 ## Features
 
