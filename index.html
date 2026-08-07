@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Satellite Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #0a0e1a;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #ui-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(10, 14, 26, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      min-width: 300px;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: #4a9eff;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .search-box:focus {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #4a9eff;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      padding: 10px 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #4a9eff;
+    }
+
+    .filter-btn.active {
+      background: rgba(74, 158, 255, 0.2);
+      border-color: #4a9eff;
+    }
+
+    .filter-btn.loading {
+      background: rgba(255, 165, 0, 0.2);
+      border-color: #ffaa00;
+      cursor: wait;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .count {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #4a9eff;
+      font-size: 14px;
+    }
+
+    .satellite-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .satellite-item {
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 13px;
+    }
+
+    .satellite-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-left: 3px solid #4a9eff;
+      padding-left: 7px;
+    }
+
+    .satellite-item.selected {
+      background: rgba(74, 158, 255, 0.2);
+      border-left: 3px solid #4a9eff;
+      padding-left: 7px;
+    }
+
+    .satellite-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .satellite-info {
+      font-size: 11px;
+      color: #888;
+    }
+
+    #info-panel {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(10, 14, 26, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 15px;
+      backdrop-filter: blur(10px);
+      font-size: 12px;
+      color: #888;
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .toggle-switch input {
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <div id="ui-panel">
+    <h1>Satellite Tracker</h1>
+    <div class="subtitle">Real-time orbital visualization</div>
+
+    <div class="section">
+      <div class="section-title">Search</div>
+      <input type="text" class="search-box" id="search-input" placeholder="Search satellites...">
+    </div>
+
+    <div class="section">
+      <div class="section-title">Categories</div>
+      <div class="filter-group" id="category-filters"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Options</div>
+      <label class="toggle-switch">
+        <span>Show Orbits</span>
+        <input type="checkbox" id="toggle-orbits">
+      </label>
+      <label class="toggle-switch">
+        <span>Show Labels</span>
+        <input type="checkbox" id="toggle-labels">
+      </label>
+    </div>
+
+    <div class="section" id="satellites-section" style="display: none;">
+      <div class="section-title">Satellites (<span id="satellite-count">0</span>)</div>
+      <div class="satellite-list" id="satellite-list"></div>
+    </div>
+
+    <div class="loading" id="loading">Initializing satellite tracker...</div>
+  </div>
+
+  <div id="info-panel">
+    <div id="stats">Satellites: <span id="total-satellites">0</span> | FPS: <span id="fps">0</span></div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
