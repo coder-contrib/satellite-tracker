@@ -4,6 +4,10 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT) || 5173,
     host: '0.0.0.0',
+    // Vite rejects requests whose Host header it does not recognise, which blocks
+    // reverse proxies that serve the dev server under their own hostname (such as a
+    // Coder workspace app).
+    allowedHosts: true,
     proxy: {
       '/api/celestrak': {
         target: 'https://celestrak.org',
